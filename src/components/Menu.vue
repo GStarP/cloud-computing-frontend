@@ -62,13 +62,14 @@ export default {
   &:nth-child(2) {
     margin: 0 $menuItemMargin;
   }
-  @keyframes wave {
+  @keyframes select {
     100% {
-      transform: translate(-8px, -8px);
+      transform: translate(-10px, -10px);
+      box-shadow: 0 1px 5px 0 rgba(60,64,67,.08), 0 1px 3px 5px rgba(60,64,67,.16);
     }
   }
   &:hover {
-    animation-name: wave;
+    animation-name: select;
     animation-duration: 0.5s;
     animation-fill-mode: forwards;
   }
