@@ -5,17 +5,17 @@ function resolve(dir) {
 }
 
 // 生产环境部署的路径
-const BASE_URL = process.env.NODE_ENV === 'production' ?
-  '/cloud-computing'
+const BASE_URL = process.env.NODE_ENV === 'production'
+  ? '/'
   : '/';
 
 module.exports = {
   publicPath: BASE_URL,
-  outputDir: 'cloudcomputing',
-  assetsDir: '', // 放置生成的静态资源路径，默认在outputDir
-  indexPath: 'index.html', // 指定生成的 index.html 输入路径，默认outputDir
-  pages: undefined, // 构建多页
-  productionSourceMap: false, // 开启生产环境的 source map
+  outputDir: 'dist',
+  assetsDir: '',
+  indexPath: 'index.html',
+  pages: undefined,
+  productionSourceMap: false,
   chainWebpack: config => {
     config.resolve.alias
       .set('@', resolve('src'))
