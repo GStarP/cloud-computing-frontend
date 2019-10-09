@@ -3,7 +3,7 @@
     <v-app-bar app>
       <v-toolbar-title>CLOUD-COMPUTING</v-toolbar-title>
       <div class="flex-grow-1"></div>
-      <v-btn dark href="https://github.com/GStarP/cloud-computing-frontend">
+      <v-btn dark href="https://github.com/GStarP/cloud-computing-2019">
         GITHUB
         <v-icon class="ml-2">mdi-github-circle</v-icon>
       </v-btn>
