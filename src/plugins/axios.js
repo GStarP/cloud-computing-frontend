@@ -1,11 +1,13 @@
 import axios from 'axios';
 
-let baseURL = '/api';
+const baseURL = process.env.NODE_ENV === 'production'
+  ? '/'
+  : 'http://localhost:8080/';
 
 const localConfig = {
   baseURL: baseURL,
   timeout: 60 * 1000,
-  withCredentials: false // 允许跨域请求
+  withCredentials: false
 };
 
 const localAxios = axios.create(localConfig);

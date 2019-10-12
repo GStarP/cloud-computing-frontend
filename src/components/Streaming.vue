@@ -43,9 +43,29 @@
 
 <script>
 import echarts from 'echarts';
+import axios from '../plugins/axios';
+
+// 循环 Promise 的辅助函数
+function PromiseForEach (arr, cb) {
+  let realResult = [];
+  let result = Promise.resolve();
+  arr.forEach((a, index) => {
+    result = result.then(() => {
+      return cb(a).then((res) => {
+        realResult.push(res);
+      });
+    });
+  });
+
+  return result.then(() => {
+    return realResult;
+  });
+};
+
 export default {
   data () {
     return {
+      timeList: [],
       options: {
         baseOption: {
           tooltip: {
@@ -58,12 +78,12 @@ export default {
             bottom: 80
           },
           timeline: {
+            show: false,
             axisType: 'category',
-            data: [
-              '2019-10',
-              '2019-09',
-              '2019-08'
-            ]
+            autoPlay: true,
+            playInterval: 2000,
+            data: [],
+            currentIndex: 0
           },
           xAxis: {
             type: 'category',
@@ -113,43 +133,81 @@ export default {
             }
           }]
         },
-        options: [
-          {
-            series: {
-              data: [
-                ['南京大学', 500],
-                ['复旦大学', 400],
-                ['清华大学', 300],
-                ['北京大学', 200],
-                ['东南大学', 100]
-              ]
-            }
-          },
-          {
-            series: {
-              data: [
-                ['南京大学', 450],
-                ['复旦大学', 350],
-                ['清华大学', 450],
-                ['北京大学', 250],
-                ['东南大学', 300]
-              ]
-            }
-          },
-          {
-            series: {
-              data: [
-                ['南京大学', 250],
-                ['复旦大学', 300],
-                ['清华大学', 600],
-                ['北京大学', 150],
-                ['东南大学', 450]
-              ]
-            }
-          }
-        ]
+        options: []
       }
     };
+  },
+  methods: {
+    /**
+     * @param {number} year 年份    2019
+     * @param {number} month 月份   8
+     * @returns {string} 时间字符串 '2019-08'
+     */
+    generateTimeStr (year, month) {
+      let res = '' + year + '-';
+      if (month < 10) {
+        res += '0';
+      }
+      res += month;
+      return res;
+    },
+    getData () {
+      PromiseForEach(this.timeList, (timeStr) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            this.renderChart(timeStr);
+            resolve();
+          }, 2000);
+        });
+      });
+    },
+    renderChart (time) {
+      console.log(time);
+      axios.get('/hot', {
+        params: {
+          time
+        }
+      }).then((response) => {
+        let res = response.data;
+        if (res.code === 200) {
+          this.options.baseOption.timeline.data.push(res.data.time);
+          this.options.baseOption.timeline.currentIndex = this.options.baseOption.timeline.data.length - 1;
+          this.options.baseOption.timeline.show = true;
+          let option = {
+            series: {
+              data: []
+            }
+          };
+          for (let i = 0; i < res.data.nameList.length; i++) {
+            let pair = [];
+            pair.push(res.data.nameList[i]);
+            pair.push(res.data.rankList[i]);
+            option.series.data.push(pair);
+          }
+          this.options.options.push(option);
+        } else {
+          alert(res.msg);
+        }
+      });
+    }
+  },
+  mounted () {
+    // 初始化时间列表
+    const start = [2019, 8];
+    const end = [2019, 11];
+    for (let y = start[0]; y <= end[0]; y++) {
+      let startM = y === start[0]
+        ? start[1]
+        : 1;
+      let endM = y === end[0]
+        ? end[1]
+        : 12;
+      for (; startM <= endM; startM++) {
+        this.timeList.push(this.generateTimeStr(y, startM));
+      }
+    }
+    // 定时获取数据
+    this.getData();
   }
 };
 </script>
