@@ -51,10 +51,10 @@
             <div>提示</div>
             <div>1.只显示热度最高的五所学校，顺序为从左向右递减</div>
             <div>2.时间轴指示统计数据的最新时间</div>
-            <div>3.热度=(点赞数+评论数+转发数)*每条微博</div>
+            <div>3.热度=(点赞数+评论数*2+转发数*3)*每条微博+累积热度*0.5</div>
             <div>4.点击 Next 获取下一月份的数据</div>
             <div>5.点击 AutoPlay 开启自动定时获取</div>
-            <div>6.注意！AutoPlay 在 Back 返回后不会结束！</div>
+            <div>6.注意！AutoPlay 在 Back 返回后不会结束！请珍惜流量！</div>
             <div></div>
           </span>
         </v-tooltip>

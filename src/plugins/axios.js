@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const baseURL = process.env.NODE_ENV === 'production'
   ? 'http://94.191.110.118:8080/'
-  : 'http://94.191.110.118:8080/';
+  : 'http://localhost:8080/';
 
 const localConfig = {
   baseURL: baseURL,
