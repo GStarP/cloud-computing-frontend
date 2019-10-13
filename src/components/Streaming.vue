@@ -1,13 +1,32 @@
 <template>
   <v-layout>
-    <v-flex md2>
+    <v-flex class="side" md2>
       <v-btn
-        class="ml-6 mt-5"
+        class="mt-8"
+        width="120"
         color="primary"
         to="/home"
       >
         <v-icon class="mr-2">mdi-undo-variant</v-icon>
         Back
+      </v-btn>
+      <v-btn
+        class="mt-5"
+        width="120"
+        color="success"
+        :disabled="cantNext"
+        @click="getNextData"
+      >
+        Next
+      </v-btn>
+      <v-btn
+        class="mt-5"
+        width="120"
+        color="warning"
+        :disabled="notOrigin"
+        @click="getData"
+      >
+        AutoPlay
       </v-btn>
     </v-flex>
     <v-flex md8 class="chart-flex">
@@ -32,7 +51,10 @@
             <div>提示</div>
             <div>1.只显示热度最高的五所学校，顺序为从左向右递减</div>
             <div>2.时间轴指示统计数据的最新时间</div>
-            <div>3.热度=(点赞数+评论数+转发数)*每条微博+粉丝数</div>
+            <div>3.热度=(点赞数+评论数+转发数)*每条微博</div>
+            <div>4.点击 Next 获取下一月份的数据</div>
+            <div>5.点击 AutoPlay 开启自动定时获取</div>
+            <div>6.注意！AutoPlay 在 Back 返回后不会结束！</div>
             <div></div>
           </span>
         </v-tooltip>
@@ -65,7 +87,9 @@ function PromiseForEach (arr, cb) {
 export default {
   data () {
     return {
+      isAutoPlay: false,
       timeList: [],
+      until: 0, // 当前加载到 timeList 的第几位
       options: {
         baseOption: {
           tooltip: {
@@ -80,10 +104,20 @@ export default {
           timeline: {
             show: false,
             axisType: 'category',
-            autoPlay: true,
-            playInterval: 2000,
+            autoPlay: false,
+            loop: false,
+            playInterval: 1500,
+            left: 'center',
+            width: '95%',
             data: [],
-            currentIndex: 0
+            currentIndex: 0,
+            checkpointStyle: {
+              symbolSize: 6,
+              animationDuration: 200
+            },
+            controlStyle: {
+              itemSize: 18
+            }
           },
           xAxis: {
             type: 'category',
@@ -95,7 +129,7 @@ export default {
               show: false
             },
             axisLabel: {
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: 'bold'
             }
           },
@@ -137,6 +171,17 @@ export default {
       }
     };
   },
+  computed: {
+    isOver () {
+      return this.until === this.timeList.length - 1;
+    },
+    notOrigin () {
+      return this.until !== 0;
+    },
+    cantNext () {
+      return this.isAutoPlay || this.until === this.timeList.length - 1;
+    }
+  },
   methods: {
     /**
      * @param {number} year 年份    2019
@@ -152,14 +197,20 @@ export default {
       return res;
     },
     getData () {
-      PromiseForEach(this.timeList, (timeStr) => {
+      this.isAutoPlay = true;
+      let li = this.timeList.slice(1);
+      PromiseForEach(li, (timeStr) => {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
             this.renderChart(timeStr);
             resolve();
-          }, 2000);
+          }, 1500);
         });
       });
+    },
+    getNextData () {
+      this.until++;
+      this.renderChart(this.timeList[this.until]);
     },
     renderChart (time) {
       console.log(time);
@@ -178,12 +229,14 @@ export default {
               data: []
             }
           };
-          for (let i = 0; i < res.data.nameList.length; i++) {
-            let pair = [];
-            pair.push(res.data.nameList[i]);
-            pair.push(res.data.rankList[i]);
-            option.series.data.push(pair);
-          }
+          // for (let i = 0; i < res.data.nameList.length; i++) {
+          //   let pair = [];
+          //   pair.push(res.data.nameList[i]);
+          //   pair.push(res.data.rankList[i]);
+          //   option.series.data.push(pair);
+          // }
+          this.options.baseOption.xAxis.data = res.data.nameList;
+          option.series.data = res.data.rankList;
           this.options.options.push(option);
         } else {
           alert(res.msg);
@@ -193,8 +246,8 @@ export default {
   },
   mounted () {
     // 初始化时间列表
-    const start = [2019, 8];
-    const end = [2019, 11];
+    const start = [2010, 5];
+    const end = [2019, 10];
     for (let y = start[0]; y <= end[0]; y++) {
       let startM = y === start[0]
         ? start[1]
@@ -206,8 +259,11 @@ export default {
         this.timeList.push(this.generateTimeStr(y, startM));
       }
     }
+
     // 定时获取数据
-    this.getData();
+    // this.getData();
+
+    this.renderChart(this.timeList[0]);
   }
 };
 </script>
@@ -215,6 +271,11 @@ export default {
 <style lang="scss" scoped>
 .chart-flex {
   display: flex;
+  align-items: center;
+}
+.side {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 .chart-card {
