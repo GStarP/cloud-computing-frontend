@@ -105,7 +105,7 @@ export default {
             show: false,
             axisType: 'category',
             autoPlay: false,
-            loop: false,
+            loop: true,
             playInterval: 1500,
             left: 'center',
             width: '95%',
@@ -229,12 +229,6 @@ export default {
               data: []
             }
           };
-          // for (let i = 0; i < res.data.nameList.length; i++) {
-          //   let pair = [];
-          //   pair.push(res.data.nameList[i]);
-          //   pair.push(res.data.rankList[i]);
-          //   option.series.data.push(pair);
-          // }
           this.options.baseOption.xAxis.data = res.data.nameList;
           option.series.data = res.data.rankList;
           this.options.options.push(option);
