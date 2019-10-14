@@ -45,7 +45,7 @@
               color="primary"
               v-on="on"
               large
-            >mdi-star-circle</v-icon>
+            >mdi-information</v-icon>
           </template>
           <span>
             <div>提示</div>
