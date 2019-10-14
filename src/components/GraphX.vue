@@ -14,13 +14,28 @@
         class="mt-5"
         width="120"
         color="success"
+        @click.stop="dialogShow = true"
       >
         <v-icon class='mr-2'>mdi-eye</v-icon>
         Graph
       </v-btn>
     </v-flex>
+    <v-dialog
+      class="graph-dialog"
+      v-model="dialogShow"
+      max-width="80%"
+    >
+      <v-card class="dialog-card">
+        <chart
+          class="graphx-chart"
+          ref="graphx-chart"
+          :options="options"
+          :auto-resize="true"
+        />
+      </v-card>
+    </v-dialog>
     <v-flex class='rank-flex' md3>
-      <v-card class='rank-card' :elevation='3'>
+      <v-card class='rank-card' :elevation='3' v-if="pageRankList.length !== 0">
         <div class='rank-title'>
           <v-icon class='mr-2' large>mdi-podium</v-icon>
           <div class='rank-title-text mt-2'>PageRank</div>
@@ -142,95 +157,85 @@
 </template>
 
 <script>
+import axios from '../plugins/axios';
+import echarts from 'echarts';
+
 export default {
   data () {
     return {
-      pageRankList: [
-        {
-          'name': '兰州大学',
-          'rank': 2.261964602068338
-        }, {
-          'name': '中南财经政法大学',
-          'rank': 2.2050218423457113
-        }, {
-          'name': '华南理工大学',
-          'rank': 2.131462488215795
-        }, {
-          'name': '东北师范大学',
-          'rank': 2.109678162602549
-        }, {
-          'name': '大连理工大学',
-          'rank': 2.0891515392622892
-        }, {
-          'name': '中央民族大学',
-          'rank': 1.9832924105823564
-        }, {
-          'name': '云南大学',
-          'rank': 1.9690137002374515
-        }, {
-          'name': '大连海事大学',
-          'rank': 1.851633026118661
-        }, {
-          'name': '中国人民大学',
-          'rank': 1.7544855186606716
-        }, {
-          'name': '南昌大学',
-          'rank': 1.7240188681635649
-        }, {
-          'name': '河海大学',
-          'rank': 1.711742584605579
-        }
-      ],
-      triangleList: [
-        {
-          'name': '兰州大学',
-          'rank': 1829
-        }, {
-          'name': '中南财经政法大学',
-          'rank': 1426
-        }, {
-          'name': '华南理工大学',
-          'rank': 1426
-        }, {
-          'name': '四川大学',
-          'rank': 1294
-        }, {
-          'name': '大连理工大学',
-          'rank': 1248
-        }, {
-          'name': '南京大学',
-          'rank': 1216
-        }, {
-          'name': '中国人民大学',
-          'rank': 1199
-        }, {
-          'name': '云南大学',
-          'rank': 1141
-        }, {
-          'name': '河海大学',
-          'rank': 1110
-        }, {
-          'name': '吉林大学',
-          'rank': 1081
-        }, {
-          'name': '南昌大学',
-          'rank': 1065
-        }
-      ],
+      pageRankList: [],
+      triangleList: [],
       services: [
         '万众瞩目',
         '交际花'
       ],
-      selectedService: '',
+      selectedService: '万众瞩目',
       mostIn: {
-        name: '上海交通大学',
-        rank: '75',
+        name: '',
+        rank: 0,
         info: '被@次数'
       },
       mostOut: {
-        name: '东北大学',
-        rank: '70',
+        name: '',
+        rank: 0,
         info: '@其他大学次数'
+      },
+      dialogShow: false,
+      options: {
+        title: {
+          text: '高校官微关注&艾特关系图',
+          left: 'center'
+        },
+        series: {
+          type: 'graph',
+          layout: 'force',
+          data: [
+            {
+              name: '南京大学',
+              symbolSize: 12
+            },
+            {
+              name: '复旦大学',
+              symbolSize: 16
+            },
+            {
+              name: '清华大学',
+              symbolSize: 25
+            }
+          ],
+          edges: [
+            {
+              source: 0,
+              target: 1,
+              value: 10
+            },
+            {
+              source: 1,
+              target: 0,
+              value: 20
+            },
+            {
+              source: 2,
+              target: 0,
+              value: 8
+            }
+          ],
+          label: {
+            emphasis: {
+              position: 'right',
+              show: true
+            }
+          },
+          roam: true,
+          focusNodeAdjacency: true,
+          lineStyle: {
+            normal: {
+              width: 1,
+              curveness: 0.3,
+              opacity: 0.8
+            }
+          }
+        }
       }
     };
   },
@@ -245,6 +250,52 @@ export default {
           return '';
       }
     }
+  },
+  methods: {
+    getPageRankList () {
+      axios.get('/page-rank').then(res => {
+        if (res.data.code === 200) {
+          this.pageRankList = res.data.data;
+        } else {
+          alert(res.data.msg);
+        }
+      });
+    },
+    getTriangleRankList () {
+      axios.get('/triangle-rank').then(res => {
+        if (res.data.code === 200) {
+          this.triangleList = res.data.data;
+        } else {
+          alert(res.data.msg);
+        }
+      });
+    },
+    getMostInDegree () {
+      axios.get('/most-in-degree').then(res => {
+        if (res.data.code === 200) {
+          this.mostIn.name = res.data.data.name;
+          this.mostIn.rank = res.data.data.rank;
+        } else {
+          alert(res.data.msg);
+        }
+      });
+    },
+    getMostOutDegree () {
+      axios.get('/most-out-degree').then(res => {
+        if (res.data.code === 200) {
+          this.mostOut.name = res.data.data.name;
+          this.mostOut.rank = res.data.data.rank;
+        } else {
+          alert(res.data.msg);
+        }
+      });
+    }
+  },
+  mounted () {
+    this.getPageRankList();
+    this.getTriangleRankList();
+    this.getMostInDegree();
+    this.getMostOutDegree();
   }
 };
 </script>
@@ -404,6 +455,17 @@ export default {
     font-size: 36px;
     background-color: red;
     color: white;
+  }
+}
+.dialog-card {
+  height: 840px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .graphx-chart {
+    width: 100%;
+    height: 100%;
   }
 }
 </style>
