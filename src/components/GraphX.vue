@@ -186,53 +186,47 @@ export default {
           text: '高校官微关注&艾特关系图',
           left: 'center'
         },
+        toolbox: {
+          show: true
+        },
         series: {
           type: 'graph',
           layout: 'force',
-          data: [
-            {
-              name: '南京大学',
-              symbolSize: 12
+          focus: {
+            initLayout: 'circular',
+            gravity: 0.001,
+            edgeLength: [10, 120]
+          },
+          data: [],
+          edges: [],
+          edgeSymbol: ['none', 'arrow'],
+          emphasis: {
+            label: {
+              show: true,
+              position: 'inside',
+              color: '#111',
+              fontWeight: 'bold',
             },
-            {
-              name: '复旦大学',
-              symbolSize: 16
-            },
-            {
-              name: '清华大学',
-              symbolSize: 25
-            }
-          ],
-          edges: [
-            {
-              source: 0,
-              target: 1,
-              value: 10
-            },
-            {
-              source: 1,
-              target: 0,
-              value: 20
-            },
-            {
-              source: 2,
-              target: 0,
-              value: 8
-            }
-          ],
-          label: {
-            emphasis: {
-              position: 'right',
-              show: true
+            lineStyle: {
+              width: 3
             }
           },
           roam: true,
           focusNodeAdjacency: true,
+          itemStyle: {
+            normal: {
+              borderColor: '#FFF',
+              borderWidth: 1,
+              shadowBlur: 10,
+              shadowColor: 'rgba(0, 0, 0, 0.3)'
+            }
+          },
           lineStyle: {
             normal: {
-              width: 1,
+              color: 'source',
+              width: 0.5,
               curveness: 0.3,
-              opacity: 0.8
+              opacity: 0.6
             }
           }
         }
@@ -289,6 +283,16 @@ export default {
           alert(res.data.msg);
         }
       });
+    },
+    getGraph () {
+      axios.get('/graph').then(res => {
+        if (res.data.code === 200) {
+          this.options.series.data = res.data.data.data;
+          this.options.series.edges = res.data.data.edge;
+        } else {
+          alert(res.data.msg);
+        }
+      });
     }
   },
   mounted () {
@@ -296,6 +300,7 @@ export default {
     this.getTriangleRankList();
     this.getMostInDegree();
     this.getMostOutDegree();
+    this.getGraph();
   }
 };
 </script>
@@ -463,6 +468,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #F3F3F3;
   .graphx-chart {
     width: 100%;
     height: 100%;
